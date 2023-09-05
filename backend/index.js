@@ -1,7 +1,7 @@
 const express = require("express");
 
 const { generateFile } = require('./generateFile');
-
+const { executeCpp } = require("./executeCpp")
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
@@ -17,8 +17,13 @@ app.post("/run", async (req, res) => {
     if (code === undefined) {
         return res.status(400).json({ success: false, error: "Empty code" });
     }
-    const filepath = await generateFile(language, code);
-    return res.json({ filepath });
+    try {
+        const filepath = await generateFile(language, code);
+        const output = await executeCpp(filepath);
+        return res.json({ filepath, output });
+    } catch (err) {
+        return res.status(500).send(err);
+    }
 });
 
 // start listening for connections
