@@ -1,21 +1,24 @@
 const express = require("express");
 
+const { generateFile } = require('./generateFile');
+
 const app = express();
 
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // routes
 app.get("/", (req, res) => {
-    res.json({ hello: "world" });
+    return res.json({ hello: "world" });
 });
 
-app.post("/run", (req, res) => {
+app.post("/run", async (req, res) => {
     const { language = "cpp", code } = req.body;
     if (code === undefined) {
-        return res.status(400).json({ success: false, error: "empty code" });
+        return res.status(400).json({ success: false, error: "Empty code" });
     }
-    return res.json({ language, code });
+    const filepath = await generateFile(language, code);
+    return res.json({ filepath });
 });
 
 // start listening for connections
